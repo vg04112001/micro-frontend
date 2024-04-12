@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <style>
+      iframe {
+        max-width: 100%;
+        width: 800px;
+        height: 300px;
+      }
+    </style>
+  </head>
+
+  <body>
+    
+    <h1>PARENT WINDOW</h1>
+    
+    <h2>Send data to child</h2>
+    <ul>
+      <li>1st action - automatic data send to child when it's loaded<br> - Status: <strong id="status-1">...WAITING...</strong></li>
+      <li>
+        2nd action - trigger data send by button:
+        <button id="btn">Submit</button><br>
+        - Status: <strong id="status-2">...NOT STARTED...</strong>
+      </li>
+      <li>
+        3rd action - parent to receive message from child. Click button "Send message to PARENT" in child frame.<br>
+        - Status: <strong id="status-3">...NOT STARTED...</strong>
+      </li>
+      
+    </ul>
+    
+    <iframe id="mainframe" src="child.html"></iframe>
+    
+    <script>
+    
+      /* DEFINITIONS */
+      var btn = document.getElementById("btn");
+      var frame = document.getElementById("mainframe");
+      frame = frame ? frame.contentWindow : null;
+
+      class Message {
+        constructor(type, body) {
+          this.type = type;
+          this.body = body;
+        }
+      }
+
+      function sendMessage (windowObj, payload) {
+        if(windowObj) {
+          windowObj.postMessage(payload, "*");
+        }
+      }
+        
+      /*
+      * RECEIVE MESSAGE FROM CHILD
+      */
+      window.addEventListener("message", (e) => {
+        var data = e.data;
+        console.log("RECEIVED message from CHILD TO PARENT", data);
+        
+        var type = data.type;
+        var body = data.body;
+
+        if(type === "shakehand" && body) {
+          console.log("SHAKEHAND RECEIVED FROM CHILD, SENDING dummyDataToSend TO CHILD...")
+          sendMessage(frame, new Message("data", dummyDataToSend));
+          document.getElementById("status-1").innerText = "DONE";
+        } else if (type === "text-msg" && body) {
+          console.log("TEXT MESSAGE RECEIVED FROM CHILD");
+          document.getElementById("status-3").innerText = "DONE";
+          alert("TEXT FROM CHILD WINDOW: " + body);
+        }
+      });
+
+      /*
+      * SEND MESSAGE TO CHILD
+      */
+      
+      var dummyDataToSend=[{name:"Monitor",price:"400",currency:"USD",description:"The best monitor made in USA."},{name:"CPU",price:"70",currency:"EUR",description:"The fastest CPU."},{name:"GPU",price:"500",currency:"USD",description:"WOW, so fast GPU for gaming"},{name:"Keyboard",price:"50",currency:"EUR",description:"Ergonomic keyboard for geeks"}];
+      
+      btn.addEventListener("click", () => {
+        sendMessage(frame, new Message("data", dummyDataToSend));
+        document.getElementById("status-2").innerText = "DONE";        
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  </head>
+  <body>
+    <h1>CHILD</h1>
+    
+    <div>
+      <button id="btn">Send message to PARENT</button>
+      <h3>Received data:</h3>
+      <div id="placeholder"></div>
+    </div>
+    
+    <script>
+    
+      /* DEFINITIONS */
+      var parentWindow = window.parent;
+      var btn = document.getElementById("btn");
+
+      class Message {
+        constructor(type, body) {
+          this.type = type;
+          this.body = body;
+        }
+      }
+
+      function sendMessage (windowObj, payload) {
+        if(windowObj) {
+          windowObj.postMessage(payload, "*");
+        }
+      }
+      
+      /*
+      * RECEIVE MESSAGE FROM PARENT
+      */
+
+      window.addEventListener("message", (e) => {
+        var data = e.data;
+        console.log("RECEIVED message from PARENT TO CHILD", data);
+        
+        var type = data.type;
+        var body = data.body;
+
+        if(type === 'data') {
+          console.log()
+          document.getElementById("placeholder").innerText += JSON.stringify(body);
+        }
+
+      });
+
+      /* SHAKE HAND WITH PARENT */
+      window.addEventListener("load", () => {
+        setTimeout(function () {
+          sendMessage(parentWindow, new Message("shakehand", true));
+        }, 2000);
+      });
+
+      /*
+      * SEND MESSAGES TO PARENT
+      */
+
+      btn.addEventListener("click", () => {
+        sendMessage(parentWindow, new Message("text-msg", "Dummy message, just button was clicked!"));
+      });
+
+    </script>
+  </body>
+</html>
